@@ -1567,7 +1567,133 @@ BEGIN
       SET @Contador = @Contador + 1
 END;
 
+--__________Aula 32__________ 
+-- CASE ... ELSE ... END
+----------------------------------------------------
 
+DROP TABLE TTEMP;
+
+SELECT a.id_aluno, a.nome, a.sexo,
+       c.nome_curso,
+	   t.data_inicio, t.data_termino,
+	   at.valor
+  FROM AlunosxTurmas at
+       inner join turmas t on (t.id_turma = at.id_turma) 
+	   inner join Cursos c on (c.id_curso = t.id_curso)
+	   inner join Alunos a on (a.id_aluno = at.id_aluno)
+
+-------------------------------- 
+
+SELECT ROW_NUMBER() OVER(ORDER BY ID_ALUNO) AS LINHA,
+            Y.ID_ALUNO, Y.NOME, Y.SEXO, Y.NOME_CURSO, Y.DATA_INICIO, Y.DATA_TERMINO, Y.VALOR
+  FROM(
+     SELECT a.id_aluno, a.nome, a.sexo,
+            c.nome_curso,
+	        t.data_inicio, t.data_termino,
+	        at.valor
+       FROM AlunosxTurmas at
+            inner join turmas t on (t.id_turma = at.id_turma) 
+	        inner join Cursos c on (c.id_curso = t.id_curso)
+	        inner join Alunos a on (a.id_aluno = at.id_aluno)
+		) Y
+
+---------------------------------
+
+SELECT X.*
+  INTO tTEMP
+  FROM(
+        SELECT ROW_NUMBER() OVER(ORDER BY ID_ALUNO) AS LINHA,
+               Y.ID_ALUNO, Y.NOME, Y.SEXO, Y.NOME_CURSO, Y.DATA_INICIO, Y.DATA_TERMINO, Y.VALOR
+  FROM(
+        SELECT a.id_aluno, a.nome, a.sexo,
+               c.nome_curso,
+	           t.data_inicio, t.data_termino,
+	        at.valor
+         FROM AlunosxTurmas at
+               inner join turmas t on (t.id_turma = at.id_turma) 
+	           inner join Cursos c on (c.id_curso = t.id_curso)
+	           inner join Alunos a on (a.id_aluno = at.id_aluno)
+		   ) Y
+      ) X
+
+SELECT * FROM tTEMP;
+
+-- CASE - Ele troca o resultado do retorno da query
+-- ELSE - Caso não ache as informaçôes, cai nele "Caso contrário".
+
+SELECT NOME, 
+       CASE SEXO 
+	        WHEN 'M' THEN 'Masculino'
+			WHEN 'F' THEN 'Feminino'
+	ELSE 'Verifique' END as Sexo, 
+	nome_curso
+  FROM tTEMP;
+
+--Checagem de sexo
+
+select x.* from(
+                  SELECT id_aluno, nome, 
+                       CASE SEXO 
+	                   WHEN 'M' THEN 'Masculino'
+			           WHEN 'F' THEN 'Feminino'
+	                ELSE 'Verifique' END as Sexo, 
+	               nome_curso
+                    FROM tTEMP
+               ) x
+where sexo = 'M';
+
+--------
+
+SELECT nome, nome_curso, valor, convert(date, data_inicio) dt_inicio,
+       case year(data_inicio)
+	        when 2020 then 'Ano Anterior'
+			when 2021 then 'Ano Atual'
+			when 2022 then 'Proximo Ano'
+	   else 'Ano inválido' end "Análise anos"
+  FROM tTEMP;
+
+---------
+
+select nome, data_nascimento, datediff(year, data_nascimento, getdate()) idade,
+       case 
+	        when datediff(year, data_nascimento, getdate()) < 18 then 'Menor de Idade'
+			when datediff(year, data_nascimento, getdate()) >= 18 then 'Maior de Idade'
+		end Status_idade
+  from Alunos;
+
+----------
+
+select nome, nome_curso, sexo
+  from tTemp
+ Order by
+       case sexo when 'F' then 'Feminino'
+	             when 'M' then 'Masculino'
+	   else 
+	             'sexo' end asc; --ou desc
+				 
+--__________Aula 33__________ 
+-- BEGIN ... END
+-- Controle de Fluxo das instrução T-SQL (Transaction SQL)
+----------------------------------------------------
+
+SELECT X.*
+  INTO tTEMP
+  FROM(
+        SELECT ROW_NUMBER() OVER(ORDER BY ID_ALUNO) AS LINHA,
+               Y.ID_ALUNO, Y.NOME, Y.SEXO, Y.NOME_CURSO, Y.DATA_INICIO, Y.DATA_TERMINO, Y.VALOR
+  FROM(
+        SELECT a.id_aluno, a.nome, a.sexo,
+               c.nome_curso,
+	           t.data_inicio, t.data_termino,
+	        at.valor
+         FROM AlunosxTurmas at
+               inner join turmas t on (t.id_turma = at.id_turma) 
+	           inner join Cursos c on (c.id_curso = t.id_curso)
+	           inner join Alunos a on (a.id_aluno = at.id_aluno)
+		   ) Y
+      ) X
+
+SELECT * FROM tTEMP;
 
 
 
