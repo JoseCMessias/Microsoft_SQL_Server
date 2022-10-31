@@ -1399,7 +1399,7 @@ COMMIT TRANSACTION TR1;
 COMMIT TRANSACTION TR3;
        PRINT 'Transaction : contador depois do COMMIT TR3 = ' + CAST(@@TRANCOUNT as NVARCHAR(10));
 
---__________Aula 31__________ 
+--__________Aula 30__________ 
 --IF... ELSE...
 ----------------------------------------------------
 
@@ -1466,7 +1466,7 @@ ELSE
 DROP TABLE TTEMP;
 
 
---__________Aula 32__________ 
+--__________Aula 31__________ 
 --WHILE
 ----------------------------------------------------
 select * into ttemp from Alunos;
@@ -1693,7 +1693,161 @@ SELECT X.*
 		   ) Y
       ) X
 
-SELECT * FROM tTEMP;;
+SELECT * FROM tTEMP;
+
+--__________Aula 34__________ 
+-- BEGIN ... END
+-- Controle de Fluxo das instrução T-SQL (Transaction SQL)
+----------------------------------------------------
+
+DECLARE @vCONTADOR INT = 1;
+
+WHILE @vCONTADOR < 10
+BEGIN 
+    PRINT 'Contador : ' + convert(varchar, @vContador)
+	set @vCONTADOR += 1
+END;
+
+-- Sem o BEGIN Aninhado
+
+BEGIN TRANSACTION;
+
+IF @@TRANCOUNT = 0
+
+    SELECT nome, nome_curso, sexo
+	FEOM tTEMP
+	WHERE sexo = 'M';
+
+ROLLBACK TRANSACTION;
+
+PRINT 'Executar Dois Rollbacks Geraria um erro de execução do segundo';
+
+ROLLBACK TRANSACTION;
+
+PRINT 'Transação defeita'
+
+--Com o BEGIN Aninhado
+
+BEGIN TRANSACTION;
+
+IF @@TRANCOUNT = 0
+
+      BEGIN
+	     select nome, nome_curso, sexo
+		   from tTemp Where sexo = 'M';		   
+	  ROLLBACK TRANSACTION;
+	  PRINT 'Executar dois rollbacs gera um erro no segundo'; 
+	END;
+
+ROLLBACK TRANSACTION;
+
+PRINT 'Trasação desfeita';
+
+DROP TABLE TTEMP;
+
+
+--__________Aula 35__________ 
+-- TRY ... CATCH
+-- Implamentação de tratamento de erros no SQL
+----------------------------------------------
+
+SELECT X.*
+  INTO tTEMP
+  FROM(
+        SELECT ROW_NUMBER() OVER(ORDER BY ID_ALUNO) AS LINHA,
+               Y.ID_ALUNO, Y.NOME, Y.SEXO, Y.NOME_CURSO, Y.DATA_INICIO, Y.DATA_TERMINO, Y.VALOR
+  FROM(
+        SELECT a.id_aluno, a.nome, a.sexo,
+               c.nome_curso,
+	           t.data_inicio, t.data_termino,
+	        at.valor
+         FROM AlunosxTurmas at
+               inner join turmas t on (t.id_turma = at.id_turma) 
+	           inner join Cursos c on (c.id_curso = t.id_curso)
+	           inner join Alunos a on (a.id_aluno = at.id_aluno)
+		   ) Y
+      ) X
+
+SELECT * FROM tTEMP;
+
+
+--Exemplo 1 
+--Tabela não existe
+
+BEGIN TRY 
+     select * from tempTable;
+END TRY 
+BEGIN CATCH
+    SELECT
+	       ERROR_NUMBER() as Numero_erro,
+		   ERROR_MESSAGE() as Mensage_erro;
+BEGIN CATCH;
+
+--Exemplo 2
+--Utilizando em um procedure
+
+CREATE PROCEDURE prc_Exmeplo
+AS
+      select * from temTable;
+GO
+
+BEGIN TRY
+   execute prc_Exemplo;
+END TRY
+BEGIN CATCH
+    SELECT 
+	       ERROR_MESSAGE() AS Numero_erro,
+		   ERROR_MESSAGE() AS Mesangem_erro;
+END CATCH;
+
+*--Exemplo 3
+
+BEGIN
+    BEGIN TRY 
+          SELECT 1/0;
+	END TRY
+	BEGIN CATCH
+	    PRINT 'Erro número   : ' + convert(varchar, error_number());
+		PRINT 'Erro mensagem : ' + error_message():
+		PRINT 'Erro severy   : ' + convert(varchar, error_severity());
+		PRINT 'Erro state    : ' + convert(varchar, error_state());
+		PRINT 'Erro line     : ' + convert(varchar, error_line());
+		PRINT 'Erro proc     : ' + error_procedure();
+	END CATCH;
+
+END
+		 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
