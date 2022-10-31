@@ -1693,7 +1693,7 @@ SELECT X.*
 		   ) Y
       ) X
 
-SELECT * FROM tTEMP;
+SELECT * FROM tTEMP;;
 
 
 
