@@ -1817,6 +1817,154 @@ BEGIN
 
 END
 		 
+--__________Aula 36__________ 
+-- criação de índices para melhorar o desempenho das consultas
+----------------------------------------------
+
+Drop table TTEMP;
+
+SELECT x.*
+  INTO TTEMP
+FROM(
+      select row_number() over(order by id_aluno) linha,
+	         y.id_aluno, y.nome, y.sexo, y.nome_curso, y.data_inicio, y.data_termino, y.valor
+        from (
+	  select a.id_aluno, a.nome, a.sexo, c.nome_curso, t.data_inicio, t.data_termino, at.valor
+	    from AlunosxTurmas at
+		     inner join turmas t on (t.id_turma = at.id_turma)
+			 inner join cursos c on (c.id_curso = t.id_curso)
+			 right join alunos a on (a.id_aluno = at.id_aluno)
+			 ) y
+) X;
+
+SELECT * FROM TTEMP;
+
+--Exemplo 1
+select t.id_aluno, a.data_cadastro, sum(isnull(t.valor, 0)) valor 
+  from TTEMP t
+       inner join alunos a on a.id_aluno = t.id_aluno
+  group by t.id_aluno, a.data_cadastro
+    having sum(isnull(t.valor, 0)) > 0;
+
+create index idx_TTEMP on TTEMP(id_aluno);
+create index idx_Alunos on Alunos(data_cadastro);
+
+DROP TABLE TTEMP.IDX_TTEMP;
+DROP TABLE ALUNOS.IDX_ALUNOS;
+DROP TABLE TTEMP;
+
+--__________Aula 37__________ 
+-- Triggers (Gatilhos)
+----------------------------------------------
+
+CREATE TABLE tbSaldos
+(
+    PRODUTO        VARCHAR(10),
+	SALDO_INICIAL  NUMERIC(10),
+	SALDO_FINAL    NUMERIC(10),
+	DATA_ULT_MOV   DATETIME   
+);
+GO
+
+INSERT INTO tbSaldos (Produto, saldo_inicial, saldo_final, data_ult_mov)
+     VALUES ('Produto A', 0, 100, getdate());
+GO
+
+CREATE TABLE tbVendas
+(
+    ID_VENDAS   INT,
+    PRODUTO     VARCHAR(10),
+    QUANTIDADE  INT,
+    DATA        DATETIME
+);
+GO
+
+CREATE SEQUENCE seq_tbVendas
+    AS NUMERIC
+	START WITH 1
+	INCRREMENT BY 1;
+
+DROP SEQUENCE SEQ_tBVENDAS
+
+CREATE TABLE tbHistoricoVendas
+(
+    PRODUTO     VARCHAR(10),
+	QUANTIDADE  INT,
+	DATA_VENDA  DATETIME
+); 
+GO
+
+CREATE TRIGGER trg_AjustaSaldo
+ON tbVendas
+FOR INSERT
+AS 
+BEGIN
+   DECLARE @QUANTIDADE    INT,
+           @DATA          DATETIME,
+		   @PRODUTO       VARCHAR(10)
+
+   SELECT @DATA = DATA, @QUANTIDADE = QUANTIDADE, @PRODUTO = PRODUTO from INSERTED
+
+   UPDATE tbSaldos
+      SET saldo_final = saldo_final - @QUANTIDADE,
+	      DATA_ULT_MOV = @DATA
+    WHERE PRODUTO = @PRODUTO;
+
+	INSERT INTO tbHistoricoVendas (PRODUTO, QUANTIDADE, DATA_VENDAS)
+	     VALUES (@produto, @quantidade, @data);
+END;
+GO
+
+INSERT INTO tbVendas (id_vendas, produto, quantidade, data)
+    values (NEXT VALUE FOR seq_tbVendas, 'Produto A', 2, getdate());
+
+select * from tbVendas;
+select * from tbSaldos;
+select * from tbHistoricoVendas;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
