@@ -1922,6 +1922,82 @@ select * from tbVendas;
 select * from tbSaldos;
 select * from tbHistoricoVendas;
 
+--__________Aula 37__________ 
+-- Procedures
+-- Conjuntos de comanddos SQLs que podem ser executados de uma só vez
+---------------------------------------------------------------------
+
+CREATE PROCEDURE BuscaCurso
+       @NomeCurso  Varchar(20)
+AS
+
+SET @NOMECURSO = '%' + @NomeCurso + '%';
+
+SELECT c.id_curso, c.nome_curso, a.nome, isnull(a.sexo, 'NI') sexo
+  FROM Cursos C 
+       inner join Turmas t on (t.id_turmas = c.id_curso)
+	   inner join AlunosxTurmas alt on (alt.id_turmas = t.id_turma)
+	   inner join Alunos a on (a.id_aluno = alt.id_aluno)
+  WHERE nome_curso like @NomeCurso;
+
+exec BuscaCurso 'Powerpoint';
+exec BuscaCurso 'Excel';
+exec BuscaCurso '%'; --Todos os alunos poosiveis no treinamento
+
+--Procedures com retorno
+------------------------
+DROP PROCEDURE IncluirNovoCurso
+
+CREATE PROCEDURE IncluirNovoCurso
+     @NomeCurso      varchar(100),
+	 @LoginCadastro  varchar(100)
+AS
+BEGIN
+    DECLARE @vIdCurso INT;
+
+	SELECT @vIdCurso = max(id_curso) + 1 fROM CURSOS;
+
+	INSERT INTO CURSOS (id_curso, nome_curso, data_cadastro, login_cadastro)
+	     VALUES (@vIdCurso, @NomeCurso, getdate(), @LoginCadastro);
+
+	SELECT @vIdCurso = id_curso from cursos where id_curso = @vIdCurso;
+
+	SELECT @vIdCurso as retorno;
+
+END;
+GO
+
+exec IncluirNovoCurso 'VBA I', 'MESSIAS';
+
+select * from cursos order by id_curso desc
+
+DELETE FROM cursos where id_curso in (23, 22);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
