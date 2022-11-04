@@ -1973,11 +1973,44 @@ select * from cursos order by id_curso desc
 
 DELETE FROM cursos where id_curso in (23, 22);
 
+--__________Aula 38__________ 
+-- Procedures
+-- Porcedures que valida se já existe o registro cadastrado
+-- se não houver cadastro
+------------------------------------------------------------
+CREATE PROCEDURE IncluirNovoCursoComValidacao
+       @NomeCurso         varchar(100),
+	   @LoginCadastro     varchar(100)
+AS
+BEGIN
+    DECLARE @vIdCurso        int;
+	DECLARE @vExisteCurso    int;
+	
+	SELECT @vExisteCurso = id_curso from Cursos where nome_curso = @NomeCurso;
 
+	IF @vExisteCurso > 0
+	     BEGIN
+		     SELECT 'O curso já existe! Gravação não realizada' as retorno
+		 END
+	ELSE
+	     BEGIN 
 
+		     SELECT @vIdCurso = max(id_curso) +1 from cursos;
 
+			 INSERT INTO Cursos (id_curso, nome_curso, data_cadastro, login_cadastro)
+			      VALUES (@vIdCurso, @NomeCurso, getdate(), @LoginCadastro);
 
+			 SELECT @vIdCurso = id_curso from Cursos where id_curso = @vIdCurso;
 
+			 SELECT @vIdCurso AS retorno;
+	END
+END;
+GO
+
+EXEC IncluirNovoCursoComValidacao 'VBA COM MESSIAS', 'MESS';
+EXEC IncluirNovoCursoComValidacao 'VBA COM JOSE', 'MESS';
+
+select * from cursos;
 
 
 
